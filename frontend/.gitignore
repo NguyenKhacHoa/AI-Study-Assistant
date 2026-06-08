@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Local env files 
+.env
+.env.*
+!.env.example
+
+# Python/Backend ignores 
+__pycache__/
+*.pyc
+venv/
+env/
+.pytest_cache/
