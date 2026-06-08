@@ -17,12 +17,10 @@ export const SignupPage: React.FC = () => {
   
   // Password Strength State
   const [passwordStrength, setPasswordStrength] = useState<"none" | "weak" | "medium" | "strong">("none")
-  const [strengthPercentage, setStrengthPercentage] = useState(0)
 
   useEffect(() => {
     if (!password) {
       setPasswordStrength("none")
-      setStrengthPercentage(0)
       return
     }
 
@@ -35,13 +33,10 @@ export const SignupPage: React.FC = () => {
 
     if (score <= 2) {
       setPasswordStrength("weak")
-      setStrengthPercentage(33)
     } else if (score <= 4) {
       setPasswordStrength("medium")
-      setStrengthPercentage(66)
     } else {
       setPasswordStrength("strong")
-      setStrengthPercentage(100)
     }
   }, [password])
 
@@ -111,6 +106,15 @@ export const SignupPage: React.FC = () => {
       case "medium": return "Medium"
       case "strong": return "Strong"
       default: return ""
+    }
+  }
+
+  const getStrengthWidthClass = () => {
+    switch (passwordStrength) {
+      case "weak": return "w-1/3"
+      case "medium": return "w-2/3"
+      case "strong": return "w-full"
+      default: return "w-0"
     }
   }
 
@@ -187,8 +191,7 @@ export const SignupPage: React.FC = () => {
               </div>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-300 ${getStrengthColor()}`}
-                  style={{ width: `${strengthPercentage}%` }}
+                  className={`h-full transition-all duration-300 ${getStrengthColor()} ${getStrengthWidthClass()}`}
                 />
               </div>
             </div>

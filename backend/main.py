@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from routers.quiz import router as quiz_router
 
 # Load environment variables
 load_dotenv()
@@ -11,6 +12,8 @@ app = FastAPI(
     description="Python FastAPI backend for StudyAI EdTech platform",
     version="1.0.0"
 )
+
+app.include_router(quiz_router, prefix="/api/v1/quizzes", tags=["Quizzes"])
 
 # CORS configuration
 origins = [

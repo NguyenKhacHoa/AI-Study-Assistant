@@ -1,0 +1,14 @@
+import os
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
+load_dotenv()
+
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
+
+if not supabase_url or not supabase_key:
+    raise ValueError("Missing database configuration. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your env.")
+
+# Initialize the Supabase Client
+supabase: Client = create_client(supabase_url, supabase_key)
