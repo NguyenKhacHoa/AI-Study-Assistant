@@ -78,16 +78,20 @@ export const SignupPage: React.FC = () => {
     setLoading(false)
   }
 
-  const handleGoogleSignup = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      
+      if (error) {
+        toast.error(error.message)
       }
-    })
-    
-    if (error) {
-      toast.error(error.message)
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred during Google Sign-In")
     }
   }
 
@@ -217,7 +221,7 @@ export const SignupPage: React.FC = () => {
       <Button 
         variant="outline" 
         className="mt-6 w-full flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 h-10 rounded-[12px] font-medium transition-all"
-        onClick={handleGoogleSignup}
+        onClick={handleGoogleLogin}
         disabled={loading}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">

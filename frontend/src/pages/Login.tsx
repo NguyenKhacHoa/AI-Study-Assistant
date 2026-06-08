@@ -37,15 +37,19 @@ export const LoginPage: React.FC = () => {
   }
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      
+      if (error) {
+        toast.error(error.message)
       }
-    })
-    
-    if (error) {
-      toast.error(error.message)
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred during Google Sign-In")
     }
   }
 
