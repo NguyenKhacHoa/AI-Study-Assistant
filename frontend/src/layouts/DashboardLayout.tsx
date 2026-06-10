@@ -1,8 +1,17 @@
 import React from "react"
-import { Outlet, NavLink } from "react-router-dom"
-import { BookOpen, LayoutDashboard, Settings, User } from "lucide-react"
+import { Outlet, NavLink, useNavigate } from "react-router-dom"
+import { BookOpen, LayoutDashboard, Settings, User, LogOut } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { Button } from "@/components/ui/button"
 
 export const DashboardLayout: React.FC = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate("/")
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -55,11 +64,19 @@ export const DashboardLayout: React.FC = () => {
             Create Quiz
           </NavLink>
         </nav>
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 space-y-1.5">
           <button className="flex items-center w-full px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
             <Settings className="w-5 h-5 mr-3" />
             Settings
           </button>
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="flex items-center w-full justify-start px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
+          >
+            <LogOut className="w-5 h-5 mr-3 shrink-0" />
+            Log out
+          </Button>
         </div>
       </aside>
 

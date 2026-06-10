@@ -1,23 +1,16 @@
 import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { Loader2, Plus, FileText } from "lucide-react"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 
-type Question = {
-  id: string
-  text: string
-  options: { id: string; text: string }[]
-}
-
 export const CreateQuizPage: React.FC = () => {
+  const navigate = useNavigate()
   const [materialText, setMaterialText] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [quizQuestions, setQuizQuestions] = useState<Question[] | null>(null)
 
   const handleGenerateQuiz = async () => {
     if (!materialText.trim()) {
@@ -26,7 +19,6 @@ export const CreateQuizPage: React.FC = () => {
     }
 
     setIsGenerating(true)
-    setQuizQuestions(null)
 
     try {
       // Get the current Supabase session and JWT
@@ -48,8 +40,8 @@ export const CreateQuizPage: React.FC = () => {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          title: `Quiz - ${new Date().toLocaleDateString("vi-VN")}`,
-          description: "Quiz được tạo tự động từ tài liệu học tập của bạn.",
+          title: `Quiz - ${new Date().toLocaleDateString("en-US")}`,
+          description: "Quiz generated automatically from your study material.",
           source_material: materialText
         })
       })
@@ -60,19 +52,17 @@ export const CreateQuizPage: React.FC = () => {
       }
 
       const responseData = await response.json()
+      const newQuizId = responseData.quiz?.id
 
-      // Map backend response questions to UI structure
-      const mappedQuestions: Question[] = responseData.questions.map((q: any) => ({
-        id: q.id,
-        text: q.question_text,
-        options: q.options.map((optText: string, idx: number) => ({
-          id: `opt-${idx}-${q.id}`,
-          text: optText
-        }))
-      }))
+      if (!newQuizId) {
+        throw new Error("Quiz created, but no ID returned from backend.")
+      }
 
-      setQuizQuestions(mappedQuestions)
-      toast.success("Quiz generated successfully!")
+      toast.success("Quiz generated successfully! Redirecting...")
+      
+      setTimeout(() => {
+        navigate(`/dashboard/quiz/${newQuizId}`)
+      }, 800)
     } catch (err: any) {
       console.error(err)
       toast.error(err.message || "An unexpected error occurred during quiz generation.")
@@ -125,45 +115,6 @@ export const CreateQuizPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {quizQuestions && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Generated Quiz</h2>
-          {quizQuestions.map((question, index) => (
-            <Card key={question.id} className="border-gray-200 shadow-sm">
-              <CardHeader className="bg-gray-50 border-b border-gray-100 rounded-t-xl pb-4">
-                <CardTitle className="text-lg font-medium text-gray-800 flex gap-3 items-start">
-                  <span className="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm">
-                    {index + 1}
-                  </span>
-                  <span className="mt-1">{question.text}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <RadioGroup className="space-y-3">
-                  {question.options.map((option) => (
-                    <div 
-                      key={option.id} 
-                      className="flex items-center space-x-3 space-y-0 border border-gray-200 rounded-lg p-4 hover:bg-indigo-50/50 transition-colors cursor-pointer"
-                    >
-                      <RadioGroupItem value={option.id} id={option.id} className="text-indigo-600" />
-                      <Label htmlFor={option.id} className="font-normal text-gray-700 cursor-pointer w-full leading-relaxed">
-                        {option.text}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </CardContent>
-            </Card>
-          ))}
-          
-          <div className="flex justify-end pt-4">
-            <Button size="lg" className="bg-gray-900 text-white hover:bg-gray-800">
-              Save to Workspace
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

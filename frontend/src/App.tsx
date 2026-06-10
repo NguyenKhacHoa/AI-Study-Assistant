@@ -29,6 +29,7 @@ const App: React.FC = () => {
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/quiz-workspace" element={<QuizWorkspacePage />} />
+              <Route path="/dashboard/quiz/:id" element={<QuizWorkspacePage />} />
               <Route path="/create-quiz" element={<CreateQuizPage />} />
             </Route>
           </Route>
