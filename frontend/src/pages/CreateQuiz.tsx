@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Loader2, Plus, FileText } from "lucide-react"
 import { toast } from "sonner"
+import { supabase } from "@/lib/supabase"
 
 type Question = {
   id: string
@@ -27,36 +28,57 @@ export const CreateQuizPage: React.FC = () => {
     setIsGenerating(true)
     setQuizQuestions(null)
 
-    // Mock a 3-second API call
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-
-    // Mock generated response
-    const generated: Question[] = [
-      {
-        id: "q1",
-        text: "What is the primary function of the Mitochondria?",
-        options: [
-          { id: "o1", text: "To synthesize proteins" },
-          { id: "o2", text: "To generate most of the chemical energy needed to power the cell's biochemical reactions" },
-          { id: "o3", text: "To store genetic information" },
-          { id: "o4", text: "To control the cell cycle" },
-        ]
-      },
-      {
-        id: "q2",
-        text: "Which process is responsible for cell division in somatic cells?",
-        options: [
-          { id: "o1", text: "Meiosis" },
-          { id: "o2", text: "Mitosis" },
-          { id: "o3", text: "Apoptosis" },
-          { id: "o4", text: "Endocytosis" },
-        ]
+    try {
+      // Get the current Supabase session and JWT
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session) {
+        toast.error("You must be logged in to generate a quiz.")
+        setIsGenerating(false)
+        return
       }
-    ]
 
-    setQuizQuestions(generated)
-    setIsGenerating(false)
-    toast.success("Quiz generated successfully!")
+      const token = session.access_token
+
+      // Call the backend endpoint
+      const response = await fetch("http://localhost:8000/api/v1/quizzes/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: `Quiz - ${new Date().toLocaleDateString("vi-VN")}`,
+          description: "Quiz được tạo tự động từ tài liệu học tập của bạn.",
+          source_material: materialText
+        })
+      })
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.detail || "Failed to generate quiz from backend.")
+      }
+
+      const responseData = await response.json()
+
+      // Map backend response questions to UI structure
+      const mappedQuestions: Question[] = responseData.questions.map((q: any) => ({
+        id: q.id,
+        text: q.question_text,
+        options: q.options.map((optText: string, idx: number) => ({
+          id: `opt-${idx}-${q.id}`,
+          text: optText
+        }))
+      }))
+
+      setQuizQuestions(mappedQuestions)
+      toast.success("Quiz generated successfully!")
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || "An unexpected error occurred during quiz generation.")
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   return (
